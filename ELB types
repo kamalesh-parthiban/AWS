@@ -1,0 +1,92 @@
+ELB
+-----
+A Load Balancer is like a traffic controller that distributes incoming requests across multiple servers so that no single server gets overwhelmed.
+-------------
+Types of LB
+---------------------------------------------
+Application Load Balancer (ALB)
+--------------------------------------------
+No, you don't need type: LoadBalancer on the Service when using Ingress + ALB
+When using an Ingress controller, the Service type should be ClusterIP (the default), not LoadBalancer.
+
+Service (ClusterIP — internal only):
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-service
+spec:
+  type: ClusterIP       # ← This is all you need
+  selector:
+    app: api
+  ports:
+  - port: 80
+    targetPort: 8080
+
+Layer: 7 (Application layer – HTTP/HTTPS)
+Integrates with containers (ECS, Kubernetes)
+Ingress is a Layer 7 (HTTP/HTTPS) concept, while:
+
+How it works:
+You define a Kubernetes Ingress resource
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-app
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /api
+        backend:
+          service:
+            name: api-service
+            port:
+              number: 80
+Client → ALB → Ingress Rules → Kubernetes Service → Pods
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+Network Load Balancer (NLB)
+------------------------------------
+
+Layer: 4 (Transport layer – TCP/UDP)
+Best for: High-performance, low-latency workloads
+
+Internet
+   │
+   ▼
+AWS NLB (Layer 4)
+   │
+   ▼
+Kubernetes Service (type=LoadBalancer)
+   │
+   ▼
+Pods (from your Deployment)
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+spec:
+  type: LoadBalancer
+  selector:
+    app: nginx
+  ports:
+    - port: 80
+      targetPort: 80
+
+Annotation → forces NLB instead of default CLB/ALB
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+Gateway Load Balancer (GWLB)
+-----------------------------------
+Layer: 3 (Network layer)
+Best for: Deploying and scaling virtual appliances
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+Classic Load Balancer (CLB) (Legacy)
+-------------------------------------
+Layer: 4 & 7 (basic)
+Best for: Older/legacy applications
+------------------------------------------------------------------------------------------------------------------------------------------------------
+I would use ALB for HTTP-based microservices due to its advanced routing, and NLB for high-performance TCP workloads requiring low latency.
