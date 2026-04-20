@@ -1,0 +1,30 @@
+Route 53
+
+Route 53 is a globally distributed DNS service that routes users to endpoints using routing policies, health checks, and low-latency name servers.”
+
+Which routing policy would you use for blue-green deployment?
+
+Answer: Failover Routing
+
+Which routing policy would you use for Canary deployment?
+
+Canary is Route 53 Weighted Routing — Split traffic by %, Example: 80% old version, 20% new"
+
+
+🔸 Simple Routing  -- within region
+One record → one resource
+
+🔸 Weighted Routing               -----------  Canary deployment
+Split traffic by %
+👉 Example: 80% old version, 20% new
+
+🔸 Latency-based Routing
+Route to lowest latency region
+
+🔸 Failover Routing                -----------   blue-green deployment
+Primary + secondary (DR setup)
+
+🔸 Geolocation Routing
+Based on user location
+
+For same routing policy we can create multiple record
