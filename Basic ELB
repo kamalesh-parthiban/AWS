@@ -152,6 +152,22 @@ Pod comes back up
 ALB health check passes again
         ↓
 Pod added back to target group ✅
+---
+Full picture:
+
+ALB Health Check
+      ↓
+/health endpoint on your pod
+      ↓
+Pod checks:
+  ├── am I running?         ✅
+  ├── DB connected?         ✅
+  ├── cache connected?      ✅
+  └── all good → 200 OK     ✅
+      ↓
+ALB marks pod as healthy
+      ↓
+Traffic flows to this pod
 
 ----------------------------------------------------------
 So the flow is:
