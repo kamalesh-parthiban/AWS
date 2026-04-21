@@ -1,3 +1,10 @@
+LB:
+
+Equally distribute web traffic 
+Common DNS name for LB
+Can perform health checks
+
+
 ALB:
 
 ✅ can route based on URL path
