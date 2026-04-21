@@ -94,6 +94,66 @@ backend.service      →          Target Groups
   auth-service       →          TG-2 (auth pods registered)
   frontend-service   →          TG-3 (frontend pods registered)
 
+ALB automatically does health checks. Here's how it works:
+
+ALB Health Check Flow
+
+ALB sends HTTP GET /health
+every 30 seconds to each pod
+        ↓
+Pod responds:
+  200 OK  → healthy   ✅ → gets traffic
+  500 ERR → unhealthy ❌ → removed from target group
+  no resp → unhealthy ❌ → removed from target group
+
+Where Health Check is Configured
+In your Kubernetes Service or Ingress annotation:
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    alb.ingress.kubernetes.io/healthcheck-path: /health        // which endpoint to check
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: "30"  // check every 30 seconds
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "5"    // wait 5 seconds for response
+    alb.ingress.kubernetes.io/healthy-threshold-count: "2"        // 2 success = mark healthy
+    alb.ingress.kubernetes.io/unhealthy-threshold-count: "2"      // 2 failures = mark unhealthy
+
+# api-service    → checks /health
+# auth-service   → checks /auth/health
+# frontend       → checks /
+
+annotations:
+  alb.ingress.kubernetes.io/healthcheck-path: /health   // default for all
+
+# Override per target group using:
+alb.ingress.kubernetes.io/conditions.api-service: |
+  healthcheck-path: /api/health
+
+alb.ingress.kubernetes.io/conditions.auth-service: |
+  healthcheck-path: /auth/health
+
+What Happens When Pod Fails Health Check
+
+Pod health check fails
+        ↓
+ALB marks pod unhealthy
+        ↓
+ALB stops sending traffic to that pod
+        ↓
+Traffic goes to healthy pods only
+        ↓
+Kubernetes detects pod issue
+        ↓
+Kubernetes restarts the pod
+        ↓
+Pod comes back up
+        ↓
+ALB health check passes again
+        ↓
+Pod added back to target group ✅
+
+----------------------------------------------------------
 So the flow is:
 
 You write Ingress YAML
