@@ -12,7 +12,60 @@ https://www.youtube.com/watch?v=fZuxp_pOzgI
 ✅ can route based on URL path
 ✅ Can route based on hostname
 ✅ Can do SSL termination
+--------------------------------------------------------
+why ALB having ipv4 or ipv6 does all ELB have ip?
 
+Yes! Every ALB has an IP address — but it is not fixed, it changes!
+
+Why ALB has IPs:
+
+ALB DNS name:
+myapp-alb-123.us-east-2.elb.amazonaws.com
+        ↓
+DNS resolves to IP addresses
+        ↓
+54.23.11.10   ← IP in us-east-2a
+54.23.11.20   ← IP in us-east-2b
+
+ALB runs across 2 AZs so it has at least 2 IPs — one per AZ.
+
+AWS automatically scales the ALB and IPs change without warning. This is why you always use the DNS name, never the IP directly.
+
+Do all ELB types have IPs?
+Yes! All three AWS load balancer types have IPs:
+
+ALB (Application LB)
+  ├── Has IP ✅
+  ├── IP changes dynamically ❌ not fixed
+  └── Use DNS name always
+
+NLB (Network LB)
+  ├── Has IP ✅
+  ├── Can have STATIC IP ✅  ← big difference!
+  ├── One static IP per AZ
+  └── Good when clients need fixed IP
+
+CLB (Classic LB) — old, avoid
+  ├── Has IP ✅
+  ├── IP changes dynamically ❌
+  └── Being phased out by AWS
+
+This is actually a key difference between ALB and NLB:
+
+ALB                          NLB
+────                         ───
+Dynamic IPs ❌               Static IPs ✅
+Cannot whitelist by IP       Can whitelist by IP
+Use DNS name                 Can use IP directly
+Layer 7 (HTTP)               Layer 4 (TCP)
+
+Bottom line:
+
+ALB → has IP but it CHANGES → always use DNS name
+NLB → has IP and it is STATIC → can use IP or DNS name
+All ELBs → have IPs → but only NLB gives you static ones
+
+---------------------------------------------------
 In EKS 
 
 The aws-load-balancer-controller IS the thing that watches your Ingress resource and creates the ALB automatically.
