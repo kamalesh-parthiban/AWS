@@ -1,0 +1,200 @@
+ALB:
+
+✅ can route based on URL path
+✅ Can route based on hostname
+✅ Can do SSL termination
+
+In EKS 
+
+The aws-load-balancer-controller IS the thing that watches your Ingress resource and creates the ALB automatically.
+
+Without the controller:
+
+You create Ingress resource
+        ↓
+Nothing happens ❌
+ALB never gets created
+Ingress just sits there ignored
+
+With the controller installed:
+
+You create Ingress resource
+        ↓
+Controller sees it ✅
+Controller calls AWS API
+        ↓
+ALB auto-created ✅
+Target groups auto-created ✅
+Routing rules auto-configured ✅
+
+routing and target are defined in ingress controller right?
+
+Yes! Exactly right!
+Everything is defined in the Ingress resource — the controller just reads it and creates everything in AWS automatically.
+
+Your Ingress YAML drives everything:
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: myapp-ingress
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:...
+spec:
+  rules:
+    - host: api.myapp.com
+      http:
+        paths:
+          - path: /api/*
+            backend:
+              service:
+                name: api-service        # ← target group created for this
+                port:
+                  number: 80
+          - path: /auth/*
+            backend:
+              service:
+                name: auth-service       # ← target group created for this
+                port:
+                  number: 80
+          - path: /frontend/*
+            backend:
+              service:
+                name: frontend-service   # ← target group created for this
+                port:
+                  number: 80
+
+What controller creates in AWS from that YAML:
+
+Ingress YAML                    AWS Resources created
+────────────────                ─────────────────────
+annotations          →          ALB settings
+  scheme: internet-facing   →   internet-facing ALB
+  certificate-arn       →       HTTPS listener 443
+
+rules.host           →          ALB listener rules
+  api.myapp.com      →          host-based routing rule
+
+paths                →          ALB path-based rules
+  /api/*             →          rule 1: forward to TG-1
+  /auth/*            →          rule 2: forward to TG-2
+  /frontend/*        →          rule 3: forward to TG-3
+
+backend.service      →          Target Groups
+  api-service        →          TG-1 (api pods registered)
+  auth-service       →          TG-2 (auth pods registered)
+  frontend-service   →          TG-3 (frontend pods registered)
+
+So the flow is:
+
+You write Ingress YAML
+        ↓
+kubectl apply -f ingress.yaml
+        ↓
+AWS Load Balancer Controller sees it
+        ↓
+Controller calls AWS API and creates:
+  ✅ ALB
+  ✅ Target Group per service
+  ✅ Routing rules (path + host based)
+  ✅ HTTPS listener with your certificate
+  ✅ HTTP → HTTPS redirect
+        ↓
+Pods get registered in target groups automatically
+        ↓
+Health checks start passing
+        ↓
+Traffic flows!
+
+users access this api.myapp.com in browser right?
+
+Yes! Exactly right.
+User types api.myapp.com in browser — here is the full journey:
+
+User types: https://api.myapp.com/api/users
+                    ↓
+            DNS lookup
+            api.myapp.com → ALB DNS
+            (e.g. myapp-alb-123.us-east-2.elb.amazonaws.com)
+                    ↓
+            ALB (port 443 HTTPS)
+                    ↓
+            ALB checks routing rules
+            host = api.myapp.com
+            path = /api/*
+                    ↓
+            Forward to Target Group 1
+                    ↓
+            Worker Node → api Pod
+                    ↓
+            Response back to user
+
+One thing you need to set up for this to work:
+DNS record in Route 53 (or any DNS provider):
+
+api.myapp.com  →  CNAME  →  myapp-alb-123.us-east-2.elb.amazonaws.com
+
+Without this DNS record, the browser cannot find the ALB!
+
+or else they can access via ALB dns name right?
+
+Yes! Exactly right.
+Without a custom domain, users can directly access via ALB DNS name:
+
+http://myapp-alb-123456.us-east-2.elb.amazonaws.com
+
+Two ways to access:
+
+ALB DNS is great for:
+
+✅ Testing after deployment
+✅ Development environment
+✅ Verifying ALB is working before DNS setup
+✅ Internal tools where URL doesn't matter
+
+Custom domain is needed for:
+
+✅ Production apps
+✅ User facing applications
+✅ SSL certificate (HTTPS)
+✅ Professional appearance
+
+So ALB DNS name is perfect for testing and dev — custom domain is for production!
+
+Two ways to access:
+
++---------------------+---------------------------+----------------------------------------------+
+|                     | Custom Domain             | ALB DNS directly                             |
++---------------------+---------------------------+----------------------------------------------+
+| URL                 | https://api.myapp.com     | http://myapp-alb-123.us-east-2.elb.amazonaws.com |
+| SSL                 | ✔ green padlock           | ✘ no SSL                                     |
+| User friendly       | ✔ easy to remember        | ✘ hard to remember                           |
+| DNS setup needed    | ✔ yes                     | ✘ no                                         |
+| Cost                | Route 53 ~$0.50/month     | Free                                         |
+| Production ready    | ✔                         | ✘                                            |
++---------------------+---------------------------+----------------------------------------------+
+
+Simple summary:
+
++------------------------+--------------------------------------+
+| Ingress YAML section   | What gets created in AWS             |
++------------------------+--------------------------------------+
+| annotations            | ALB configuration                    |
+| rules.host             | Host-based routing rules             |
+| paths                  | Path-based routing rules             |
+| backend.service        | Target Groups                        |
+| certificate-arn        | HTTPS listener                       |
++------------------------+--------------------------------------+
+
+One YAML file = entire ALB setup automated!
+The controller handles all the AWS API calls for you.
+
+NLB:
+
+✅ Non-HTTP traffic (databases, game servers, IoT)
+✅ Need ultra-low latency
+✅ Need static IP on load balancer
+✅ TCP/UDP protocols
+✅ Single service that needs raw performance
