@@ -1,0 +1,29 @@
+What is CloudFront in AWS?
+
+Amazon CloudFront is a CDN (Content Delivery Network) service that delivers content to users faster by caching it at edge locations closer to them.
+
+In EKS?
+
+When you create CloudFront distribution you give the ALB DNS as the origin:
+
+Route 53
+  myapp.com → CloudFront domain
+                    ↓
+              CloudFront
+                    ↓
+              Origin: ALB DNS
+                    ↓
+                   ALB
+                    ↓
+                EKS Pods
+
+Why use CloudFront in front of ALB:
+
+| Feature               | Benefit                       |
+| --------------------- | ----------------------------- |
+| CDN caching           | Static files served from edge |
+| Global edge locations | Low latency worldwide         |
+| DDoS protection       | AWS Shield built in           |
+| WAF integration       | Block malicious traffic       |
+| SSL termination       | HTTPS at edge                 |
+| Cost reduction        | Less traffic hits ALB         |
