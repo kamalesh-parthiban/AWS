@@ -187,6 +187,27 @@ Correct way to say it:
   AWS Shield for DDoS protection
   AWS ACM for SSL certificates"
 
+| Service    | What it is       | Integrates with         |
+| ---------- | ---------------- | ----------------------- |
+| CloudFront | CDN              | WAF, Shield, ACM        |
+| AWS WAF    | Web firewall     | CloudFront, ALB, API GW |
+| AWS Shield | DDoS protection  | All AWS resources       |
+| AWS ACM    | SSL certificates | CloudFront, ALB         |
+
+
+Akamai vs AWS equivalent:
+
+Akamai (all in one product)    AWS (separate services)
+───────────────────────        ──────────────────────
+Akamai CDN              →      CloudFront
+Akamai WAF              →      AWS WAF
+Akamai DDoS protection  →      AWS Shield
+Akamai SSL              →      AWS ACM
+Akamai DNS              →      Route53
+
+Akamai = one vendor, one contract, one config
+AWS    = four separate services, four configs
+
 
 
 
