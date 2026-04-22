@@ -117,6 +117,76 @@ NLB (Layer 4):
         ↓
 NGINX does ALL Layer 7 work ✅
 
+-----------------
+CloudFront
+──────────
+✅ CDN          → yes built in
+✅ WAF          → yes via AWS WAF
+✅ DDoS         → yes via AWS Shield
+✅ SSL          → yes via AWS ACM
+✅ Security     → yes all included
+
+does WAF  DDoS    SSL are not cloudfront features right?
+
+Yes! Exactly right. Good catch!
+They are separate AWS services — not CloudFront features:
+
+CloudFront alone:
+  ✅ CDN                → YES built in to CloudFront
+  ❌ WAF                → separate AWS WAF service
+  ❌ DDoS               → separate AWS Shield service
+  ❌ SSL                → separate AWS ACM service
+
+But they all INTEGRATE with CloudFront:
+
+CloudFront distribution
+  ├── attaches AWS WAF    ← you enable separately
+  ├── attaches AWS Shield ← automatically on CloudFront
+  └── attaches AWS ACM    ← you attach certificate
+
+Each service explained:
+AWS CloudFront:
+
+What it does:  CDN only
+               caches content at edge locations
+               reduces latency for global users
+Standalone:    ✅ yes works alone
+
+AWS WAF:
+
+What it does:  Web Application Firewall
+               blocks SQL injection, XSS, bots
+               custom rules
+Standalone:    ✅ yes works alone
+               attaches to CloudFront, ALB, API Gateway
+
+AWS Shield:
+
+What it does:  DDoS protection
+Tiers:
+  Shield Standard → ✅ FREE, automatic on all AWS resources
+  Shield Advanced → 💸 paid, enhanced protection
+Standalone:    ✅ automatic, no setup needed
+
+AWS ACM:
+
+What it does:  SSL/TLS certificate management
+               FREE certificates
+               auto renewal
+Standalone:    ✅ yes works alone
+               attaches to CloudFront, ALB, API Gateway
+
+Correct way to say it:
+
+❌ Wrong:
+"CloudFront has WAF, DDoS, SSL"
+
+✅ Correct:
+"CloudFront integrates with
+  AWS WAF for web filtering
+  AWS Shield for DDoS protection
+  AWS ACM for SSL certificates"
+
 
 
 
