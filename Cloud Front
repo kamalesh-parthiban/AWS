@@ -27,3 +27,104 @@ Why use CloudFront in front of ALB:
 | WAF integration       | Block malicious traffic       |
 | SSL termination       | HTTPS at edge                 |
 | Cost reduction        | Less traffic hits ALB         |
+
+does it support NLB?
+
+Claude responded: Yes!
+Yes! CloudFront supports NLB as an origin — but with a condition:
+
+Problem with NLB + CloudFront:
+
+NLB is Layer 4 (TCP only)
+    ↓
+CloudFront is Layer 7 (HTTP/HTTPS)
+    ↓
+Mismatch!
+
+CloudFront expects HTTP/HTTPS responses
+NLB just passes TCP traffic
+    ↓
+NGINX pod must handle SSL ← extra config needed
+
+That's why ALB is preferred over NLB for CloudFront:
+
+CloudFront + ALB:
+  Both Layer 7 ✅
+  SSL at ALB ✅
+  Clean integration ✅
+  No extra config ✅
+
+CloudFront + NLB:
+  Layer mismatch ⚠️
+  SSL must be at NGINX pod
+  Extra config needed ⚠️
+  Works but more complex
+
+Nginx controller with ALB is best or NLB is best?
+
+NGINX Controller with NLB is Better ✅
+
+NGINX + NLB                    NGINX + ALB
+───────────                    ───────────
+✅ recommended                 ⚠️ not ideal
+✅ your company uses this      ❌ avoid this combo
+✅ makes sense                 ❌ redundant
+
+Why NGINX + ALB is Redundant
+
+NGINX + ALB:
+────────────
+User
+  ↓
+ALB
+  does Layer 7 routing      ← ALB doing L7
+  reads HTTP headers
+  path based routing
+  ↓
+NGINX
+  does Layer 7 routing      ← NGINX also doing L7
+  reads HTTP headers
+  path based routing
+  ↓
+Pods
+
+Two Layer 7 doing same job ❌
+Wasteful and expensive ❌
+
+Both doing same job = wasteful:
+
+ALB:
+  reads HTTP headers ✅
+  path based routing ✅
+  host based routing ✅
+        ↓
+NGINX:
+  reads HTTP headers ✅     ← already done by ALB ❌
+  path based routing ✅     ← already done by ALB ❌
+  host based routing ✅     ← already done by ALB ❌
+        ↓
+Pods
+
+NLB is perfect pair for NGINX because:
+
+NLB (Layer 4):
+  ✅ Just passes TCP traffic
+  ✅ Does NOT read HTTP headers
+  ✅ Does NOT do path routing
+  ✅ No duplication with NGINX
+  ✅ Static IP
+  ✅ Very fast (no HTTP processing)
+        ↓
+NGINX does ALL Layer 7 work ✅
+
+
+
+
+
+
+
+
+
+
+
+
