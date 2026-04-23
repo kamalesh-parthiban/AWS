@@ -748,5 +748,130 @@ Services      Recommended
 101-300       ALB Controller + ALB  ⚠️ hitting limits
 300+          NGINX + NLB           ✅ best choice
 400+          NGINX + NLB           ✅ your company
+--------------------
+AWS ALB
+  ✅ reads HTTP          ← doing L7
+  ✅ path routing
+  ✅ host routing
+
+In AWS ALB these are defined in Listener Rules:
+
+ALB Structure:
+
+ALB
+    ↓
+Listener (port 80 or 443)
+    ↓
+Listener Rules (path/host routing)
+    ↓
+Target Group
+    ↓
+Pods/Instances
+--------------
+In AWS Console:
+
+EC2 → Load Balancers → your ALB
+    ↓
+Listeners tab
+    ↓
+Click: View/edit rules
+    ↓
+Add Rule:
+  IF host = api.myapp.com    ← host routing
+  IF path = /api/*           ← path routing
+  THEN forward to target group ✅
+
+I can see you are on the Create ALB page — that's why you don't see rules yet!
+
+You are here:
+─────────────
+Creating NEW ALB
+  → Listeners and routing
+  → just adding basic listener
+  → no rules here yet ⚠️
+
+Rules are added AFTER ALB is created:
+──────────────────────────────────────
+ALB created ✅
+  ↓
+Go to existing ALB
+  ↓
+Listeners tab
+  ↓
+View/edit rules
+  ↓
+Add rules here ✅
+
+What You See Now is Correct
+
+Current page shows:
+──────────────────
+Listener HTTP:80        ✅ correct
+Protocol: HTTP          ✅ correct
+Port: 80                ✅ correct
+
+Default action:
+  Forward to target group  ← just default rule
+  Redirect to URL
+  Return fixed response
+
+This is DEFAULT action only
+NOT where you add path/host rules ⚠️
+
+------------------------------------
+Step by Step — How to Add Rules
+
+Step 1: First finish creating ALB
+
+Fill target group
+Click Create load balancer ✅
+
+Step 2: Go to existing ALB
+
+EC2 Console
+→ Load Balancers
+→ Click your ALB name
+
+Step 3: Click Listeners tab
+
+Details | Listeners | Security | Tags
+
+→ Click Listeners tab
+→ You will see HTTP:80 listener
+
+Step 4: Click listener
+
+→ Click on HTTP:80
+→ Click View/edit rules button
+
+Step 5: Add Rule
+
+→ Click Add rule
+→ Add condition:
+    Host header = api.myapp.com
+    OR
+    Path        = /api/*
+→ Add action:
+    Forward to target group
+→ Save ✅
+
+What the Rules Page Looks Like
+
+Rules for HTTP:80 listener:
+
+Priority  Conditions           Actions
+────────  ──────────────       ────────────────────
+1         Host: api.myapp.com  Forward → api-tg
+2         Path: /api/*         Forward → api-tg
+3         Path: /auth/*        Forward → auth-tg
+4         Path: /frontend/*    Forward → frontend-tg
+Default   -                    Forward → default-tg
+
+
+
+
+
+
+
 
 
