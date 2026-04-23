@@ -868,6 +868,38 @@ Priority  Conditions           Actions
 Default   -                    Forward → default-tg
 
 
+NLB vs ALB Listener — Key Difference
+
+NLB Listener (what you see):         ALB Listener
+─────────────────────────────        ─────────────
+Protocol: TCP                        Protocol: HTTP/HTTPS
+Port: 80                             Port: 80/443
+Forward to target group ONLY         Forward to target group
+NO path routing ❌                   ✅ path routing
+NO host routing ❌                   ✅ host routing
+NO rules ❌                          ✅ add rules
+just forwards TCP blindly            reads HTTP headers
+
+NLB cannot do rules
+because it is Layer 4
+it does NOT read HTTP ❌
+
+This is Correct for Your Company!
+
+Your company flow:
+──────────────────
+Akamai
+    ↓
+NLB (dr-coreiq-external-akamai)
+    ↓
+TCP:80 → forward to dr-coreiq-external-akamai-30080
+    ↓
+NodePort 30080
+    ↓
+NGINX Controller    ← path/host routing happens HERE ✅
+    ↓
+Pods
+
 
 
 
