@@ -1,6 +1,8 @@
 ACM (AWS Certificate Manager) has one main job:
 Manage SSL/TLS certificates for your domain.
-
+-----------------
+https://www.youtube.com/watch?v=HpOjscdsrNU
+------------------
 SSL is the name, TLS is the technology — everyone uses SSL because it was first and the name stuck!
 
 SSL  =  old name, deprecated protocol
