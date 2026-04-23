@@ -207,6 +207,29 @@ ALB:
      ALB always terminates TLS
      cannot forward encrypted traffic
 
+Best Practice — HTTP to HTTPS Redirect
+
+HTTP:80 listener:
+  Default action:
+    Redirect to HTTPS  ← don't forward HTTP
+    Status: 301        ← permanent redirect
+
+HTTPS:443 listener:
+  Rules:
+    Priority 1: Host → Forward to TG
+    Priority 2: Path → Forward to TG
+    Default    : Forward to default-tg
+
+Summary
+
+HTTP:80  → same rules ✅
+           no cert needed
+           best practice: redirect to HTTPS
+
+HTTPS:443→ same rules ✅
+           needs TLS cert (free from ACM)
+           SSL termination at ALB
+           traffic to pods is HTTP internally
 
 
 
