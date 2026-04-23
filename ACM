@@ -1,0 +1,220 @@
+ACM (AWS Certificate Manager) has one main job:
+Manage SSL/TLS certificates for your domain.
+
+SSL is the name, TLS is the technology — everyone uses SSL because it was first and the name stuck!
+
+SSL  =  old name, deprecated protocol
+TLS  =  new name, current protocol
+
+But in conversation:
+  SSL = TLS = same meaning ✅
+  nobody will correct you
+  even engineers say SSL
+  even AWS says SSL
+  
+Just remember:
+  technically  →  TLS is correct
+  practically  →  SSL and TLS mean same thing
+
+------------------
+Even AWS mixes the terms:
+
+AWS Console says:
+  "SSL/TLS certificate"   ← uses both together
+  "SSL policy"            ← actually means TLS policy
+  "SSL termination"       ← actually means TLS termination
+
+Because they know people say SSL
+even though TLS is what actually runs
+
+Same thing, different name:
+
+SSL certificate    =    TLS certificate
+SSL termination    =    TLS termination
+SSL handshake      =    TLS handshake
+SSL port 443       =    TLS port 443
+HTTPS              =    HTTP over TLS
+                        (not HTTP over SSL anymore)
+
+What SSL certificate actually does:
+
+Without SSL:
+  browser shows ❌ Not Secure
+  http://accessmyiq.com
+  all data travels unencrypted
+  anyone can read it 😱
+
+With SSL:
+  browser shows 🔒 padlock
+  https://accessmyiq.com
+  all data encrypted
+  safe from hackers ✅
+------------------
+Where ACM certificates attach:
+
+ACM Certificate
+  ├── CloudFront    ✅ global CDN
+  ├── ALB           ✅ load balancer
+  ├── API Gateway   ✅ APIs
+  └── NLB           ❌ does not support ACM
+                       (NLB is Layer 4, no SSL)
+
+Simple summary:
+
+ACM = free SSL certificate manager
+
+Gives you:
+  ✅ FREE certificate
+  ✅ auto renewal
+  ✅ easy setup
+  ✅ attaches to ALB, CloudFront, API Gateway
+
+Does NOT give you:
+  ❌ CDN (that is CloudFront)
+  ❌ WAF (that is AWS WAF)
+  ❌ DDoS (that is AWS Shield)
+  ❌ works with NLB (Layer 4, no SSL support)
+---------------------------
+NLB supports TLS at Layer 4:
+
+NLB TLS support:
+  ✅ TLS passthrough   → forwards encrypted traffic as is
+  ✅ TLS termination   → NLB decrypts, forwards plain HTTP
+
+Two modes NLB handles TLS:
+Mode 1 — TLS Passthrough (what your company uses)
+
+User
+  ↓ HTTPS/TLS encrypted
+NLB
+  ↓ forwards encrypted packets AS IS
+  ↓ does NOT decrypt
+  ↓ does NOT need certificate
+NGINX
+  ↓ decrypts here (or Akamai already did)
+Pods
+
+Mode 2 — TLS Termination at NLB
+
+User
+  ↓ HTTPS/TLS encrypted
+NLB
+  ↓ decrypts here ✅
+  ↓ needs ACM certificate ✅
+  ↓ forwards plain TCP
+NGINX
+  ↓ receives plain HTTP
+Pods
+
+NLB DOES support ACM:
+
+NLB + TLS termination:
+  ✅ attach ACM certificate to NLB
+  ✅ NLB decrypts TLS
+  ✅ forwards plain traffic to NGINX
+
+BUT only for TCP listener
+not HTTP/HTTPS listener
+
+Simple summary:
+
+NLB TLS support:
+  ✅ TLS passthrough    (forwards encrypted as is)
+  ✅ TLS termination    (decrypts, needs ACM cert)
+  ✅ ACM certificate    (when terminating TLS)
+  ❌ HTTP routing       (still needs NGINX for that)
+
+My earlier statement was wrong!
+NLB does support TLS and ACM ✅
+
+
+Simple summary:
+
+Both NLB and ALB:
+  ✅ SSL/TLS certificate
+  ✅ SSL/TLS termination
+  ✅ SSL/TLS handshake
+  ✅ TLS 1.2 and 1.3
+  ✅ ACM certificates
+
+Only NLB:
+  ✅ TLS passthrough
+
+Only ALB:
+  ✅ HTTP routing after TLS
+  ✅ full SSL policy control
+
+Both support all SSL/TLS features — NLB just adds passthrough and ALB adds HTTP routing on top!
+
+Full comparison table:
+
+Feature                     | ALB        | NLB
+---------------------------|------------|------------
+ACM certificate            | Yes        | Yes
+TLS termination            | Yes        | Yes
+TLS passthrough            | No         | Yes
+TLS handshake              | Yes        | Yes
+TLS 1.2                    | Yes        | Yes
+TLS 1.3                    | Yes        | Yes
+SSL policy control         | Full       | Limited
+SNI support                | Yes        | Yes
+HTTP routing after TLS     | Yes        | No (needs NGINX)
+Multiple certificates      | Yes        | Yes
+
+SSL/TLS Termination:
+
+ALB:
+  ✅ terminates TLS
+  ✅ decrypts at Layer 7
+  ✅ reads HTTP after decryption
+  ✅ routes based on path/host
+
+NLB:
+  ✅ terminates TLS
+  ✅ decrypts at Layer 4
+  ❌ cannot read HTTP after decryption
+  ❌ cannot route based on path/host
+  needs NGINX for routing
+
+SSL/TLS Handshake:
+
+ALB:
+  ✅ handles TLS handshake
+  ✅ TLS 1.2 supported
+  ✅ TLS 1.3 supported
+  ✅ full SSL policy control
+     (choose exact ciphers)
+
+NLB:
+  ✅ handles TLS handshake
+  ✅ TLS 1.2 supported
+  ✅ TLS 1.3 supported
+  ⚠️ limited SSL policy options
+     (fewer cipher choices than ALB)
+
+TLS Passthrough — only NLB:
+
+NLB only:
+  ✅ TLS passthrough
+     forwards encrypted traffic
+     without decrypting
+     NGINX or app decrypts
+
+ALB:
+  ❌ no TLS passthrough
+     ALB always terminates TLS
+     cannot forward encrypted traffic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
