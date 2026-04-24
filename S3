@@ -36,24 +36,126 @@ What is the max object size?
 
 How to make object public?
 
-Steps to Make Object Public via ACL
-Step 1 — Enable ACLs on the Bucket
+https://www.youtube.com/watch?v=qjebh5AOZ8E
+-----------------------
+ACL disabled  → ✅ YES default (after April 2023)
+Block public  → ✅ YES default (always was)
 
-S3 Console → Your Bucket → Permissions
-Scroll to Object Ownership → Click Edit
-Select "ACLs enabled"
-Select "Bucket owner preferred" → Save
+Both are secure by default
+AWS made this change for better security ✅
 
-Step 2 — Disable Block Public Access
+You do NOT need ACL for most cases — just disable block public access and use Bucket Policy which is simpler, more powerful and AWS recommended! ✅
+----
+on bucket if
 
-Still in Permissions tab
-Edit Block Public Access → Uncheck all → Save → type confirm
+ACL disabled  -- by default
++
+Block Public Access OFF (allow public)  -- we need to do
++
+NO bucket policy
+        ↓
+❌ Object NOT accessible to public
+---
+S3 Permission Check
 
-Step 3 — Set ACL on the Object
+Public tries to access object
+        ↓
+S3 checks:
 
-Go to your object → Permissions tab
-Click Edit → Check "Everyone (public access) → Read" → Save
+1. Block Public Access? → OFF ✅ continue
+2. Bucket Policy?       → NONE ❌
+3. ACL?                 → DISABLED ❌
+4. IAM Policy?          → NONE ❌
+        ↓
+No permission found anywhere
+        ↓
+403 Access Denied ❌
 
+To Make Public You Need
+
+Minimum required:
+
+Option 1:
+  ✅ Block Public Access OFF
+  ✅ Bucket Policy allow *
+  (ACL disabled is fine)
+
+Option 2:
+  ✅ Block Public Access OFF
+  ✅ ACL enabled
+  ✅ Object ACL = public-read
+  (no bucket policy needed)
+
+Option 1:
+Bucket Policy (Best Practice)
+
+S3 Console
+→ Your Bucket
+→ Permissions tab
+→ Bucket Policy
+→ Edit
+→ Paste this policy:
+
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::my-bucket/*"
+    }
+  ]
+}
+
+Option 2:
+
+Step 1: Enable ACL on Bucket (Object Ownership)
+
+S3 Console
+→ Your Bucket
+→ Permissions tab
+→ Object Ownership
+→ Edit
+→ Select: ACLs enabled
+→ Select: Bucket owner preferred
+→ Check the confirmation checkbox
+→ Save changes ✅
+
+Step 2: Turn Off Block Public Access
+
+S3 Console
+→ Your Bucket
+→ Permissions tab
+→ Block public access (bucket settings)
+→ Edit
+→ Uncheck: Block all public access ✅
+→ Save changes
+→ Type "confirm"
+→ Confirm ✅
+
+Step 3: Set Object ACL to public-read
+Via Console:
+
+S3 Console
+→ Your Bucket
+→ Click your object/file
+→ Permissions tab
+→ Edit ACL
+→ Everyone (public access)
+→ Check: Read ✅
+→ Save changes ✅
+
+Option 1 vs Option 2 Summary
+
+Option 1 (Bucket Policy):       Option 2 (ACL):
+────────────────────────        ───────────────
+ACL disabled ✅                 ACL enabled ✅
+Block Public OFF ✅             Block Public OFF ✅
+Bucket Policy allow * ✅        Object ACL public-read ✅
+all objects public              per object control
+easier to manage ✅             object by object ⚠️
+AWS recommended ✅              old way ⚠️
 --------------------------------------------
 what is encryption in s3?
 
