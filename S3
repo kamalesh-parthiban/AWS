@@ -1,0 +1,408 @@
+S3
+
+is the object that we upload in s3 bucket by default is private?
+
+Yes! Objects uploaded to an S3 bucket are private by default.
+
+Who Can Access by Default?
+WhoCan Access?Object owner (your AWS account)        ✅ Yes
+IAM users in your account (with permissions)         ✅ Yes
+Other AWS accounts                                   ❌ No
+Public internet / anonymous users                    ❌ No
+
+What's Private by Default When You Create a Bucket?
+What                       Default State
+Bucket itself              🔒 Private
+All objects inside         🔒 Private
+Block Public Access        ✅ Enabled (all 4 settings ON)
+Bucket ACL                 🔒 Private
+Bucket Policy              ❌ None (no public access granted)
+
+What is the max object size?
+
+| Upload Type             | Maximum Size   |
+| ----------------------- | -------------- |
+| Single PUT upload       | **5 GB**       |
+| Multipart upload        | **Up to 5 TB** |
+| Overall max object size | **5 TB**       |
+
+| File Size         | Recommended Method                         |
+| ----------------- | ------------------------------------------ |
+| **< 100 MB**      | Single PUT upload                          |
+| **100 MB – 5 GB** | Multipart upload *(recommended)*           |
+| **5 GB – 5 TB**   | Multipart upload *(required)*              |
+| **> 5 TB**        | ❌ Not supported (must split before upload) |
+
+
+How to make object public?
+
+Steps to Make Object Public via ACL
+Step 1 — Enable ACLs on the Bucket
+
+S3 Console → Your Bucket → Permissions
+Scroll to Object Ownership → Click Edit
+Select "ACLs enabled"
+Select "Bucket owner preferred" → Save
+
+Step 2 — Disable Block Public Access
+
+Still in Permissions tab
+Edit Block Public Access → Uncheck all → Save → type confirm
+
+Step 3 — Set ACL on the Object
+
+Go to your object → Permissions tab
+Click Edit → Check "Everyone (public access) → Read" → Save
+
+--------------------------------------------
+what is encryption in s3?
+
+S3 Encryption Types (Correct & Interview-Ready)
+
+| Type        | Full Name                                          | Who Manages Keys                         |
+| ----------- | -------------------------------------------------- | ---------------------------------------- |
+| **SSE-S3**  | Server-Side Encryption with S3 keys                | AWS manages everything                   |
+| **SSE-KMS** | Server-Side Encryption with KMS keys               | AWS Key Management Service + you control |
+| **SSE-C**   | Server-Side Encryption with Customer-provided keys | You manage keys                          |
+| **CSE**     | Client-Side Encryption                             | You encrypt before upload                |
+
+SSE-S3 (Default)
+
+AWS automatically encrypts every object
+Uses AES-256 encryption
+AWS manages the keys — you do nothing
+✅ Enabled by default on all new buckets since 2023
+
+What is versioning in S3?
+
+Versioning means S3 keeps multiple versions of the same object every time you upload, overwrite, or delete it.
+
+Storage Cost with Versioning
+⚠️ Every version is stored separately and you pay for all versions.
+file.txt v1 = 10 MB  → you pay for 10 MB
+file.txt v2 = 10 MB  → you pay for 20 MB
+file.txt v3 = 10 MB  → you pay for 30 MB
+To manage costs, use Lifecycle Policies to auto-delete old versions:
+
+S3 Console → Your Bucket → Management tab
+Add Lifecycle Rule → expire old versions after X days
+
+How to Restore a Deleted Object
+
+Go to your bucket
+Click Show versions toggle (top right)
+Find the delete marker on your file
+Delete the delete marker → file is restored! ✅
+
+What are S3 storage classes?
+
+S3 Storage Classes
+    ├── S3 Standard
+    ├── S3 Intelligent-Tiering
+    ├── S3 Standard-IA
+    ├── S3 One Zone-IA
+    ├── S3 Glacier Instant Retrieval
+    ├── S3 Glacier Flexible Retrieval
+    └── S3 Glacier Deep Archive
+
+How often do you access the data?
+        │
+        ├── Every day?
+        │       └── S3 Standard
+        │
+        ├── Unknown pattern?
+        │       └── S3 Intelligent-Tiering
+        │
+        ├── Once a month?
+        │       └── S3 Standard-IA
+        │
+        ├── Once a quarter?
+        │       └── S3 Glacier Instant Retrieval
+        │
+        ├── Once or twice a year?
+        │       └── S3 Glacier Flexible Retrieval
+        │
+        └── Almost never (compliance)?
+                └── S3 Glacier Deep Archive
+
+| Storage Class            | Availability | Min Storage Duration | Retrieval Time | Cost       |
+| ------------------------ | ------------ | -------------------- | -------------- | --------   |
+| **Standard**             | 99.99%       | None                 | Instant        | 💰💰💰💰 | Multi zone
+| **Intelligent-Tiering**  | 99.9%        | None                 | Instant        | 💰💰💰   | Multi zone
+| **Standard-IA**          | 99.9%        | 30 days              | Instant        | 💰💰💰   | Multi zone
+| **One Zone-IA**          | 99.5%        | 30 days              | Instant        | 💰💰      | one zone-IA have only in one zone
+| **Glacier Instant**      | 99.9%        | 90 days              | Milliseconds   | 💰💰      |
+| **Glacier Flexible**     | 99.99%       | 90 days              | Minutes–Hours  | 💰        |
+| **Glacier Deep Archive** | 99.99%       | 180 days             | 12–48 Hours    | 💰        |
+
+
+what is lifecycle management rules in s3?
+
+Lifecycle rules are automatic policies you set on an S3 bucket to automatically transition or expire objects based on their age — saving you storage costs without manual work.
+
+How to Create a Lifecycle Rule
+
+Go to S3 Console → Your Bucket
+Click Management tab
+Click Create lifecycle rule
+Fill in:
+
+Rule name        → give it a name (e.g. "move-logs")
+Rule scope       → entire bucket OR specific prefix/tag
+Transition       → choose storage class + number of days
+Expiration       → choose days to auto delete
+
+Two Types of Lifecycle Actions
+
+Lifecycle Actions
+    ├── Transition Actions   (move to cheaper storage class)
+    └── Expiration Actions   (automatically delete objects)
+
+1. Transition Actions
+
+automatically move objects to a cheaper storage class after a certain number of days.
+
+Day 0    → S3 Standard         (frequently accessed)
+Day 30   → S3 Standard-IA      (less frequently accessed)
+Day 90   → S3 Glacier Instant  (rarely accessed)
+Day 180  → S3 Glacier Flexible (archive)
+Day 365  → S3 Glacier Deep Archive (long-term archive)
+
+2. Expiration Actions
+Automatically delete objects after a certain number of days.
+
+Day 0    → Object uploaded
+Day 365  → Object automatically deleted ❌
+
+what is static website hosting in s3?
+
+Static Website                    Dynamic Website
+      │                                 │
+HTML, CSS, JavaScript            Needs a server
+Images, videos                   PHP, Node.js, Python
+No server-side code              Database queries
+      │                                 │
+✅ Can host on S3                ❌ Cannot host on S3
+
+🌟 Why Host on S3?
+
+| Benefit                  | Description                                            |
+| ------------------------ | ------------------------------------------------------ |
+| 💰 **Very cheap**        | Pay only for storage used and requests—no upfront cost |
+| 🚀 **Highly available**  | 99.99% availability, redundant across multiple AZs     |
+| 🌍 **Scalable**          | Handles any amount of traffic automatically            |
+| 🛠️ **No server needed** | Fully managed, no EC2 or server maintenance required   |
+| ⚡ **Fast setup**         | Can host a website or static content in minutes        |
+
+Step by Step — How to Host a Static Website
+
+Step 1 — Create an S3 Bucket
+
+Bucket name must match your domain name (if using custom domain)
+e.g. www.mywebsite.com
+Choose your region
+
+Step 2 — Upload Your Website Files
+
+Upload index.html, CSS, JS, images etc.
+Make sure index.html is at the root of the bucket
+
+Step 3 — Enable Static Website Hosting
+
+S3 Console → Your Bucket → Properties tab
+Scroll to Static website hosting
+Click Edit → Select Enable
+Set Index document → index.html
+Set Error document → error.html (optional)
+Click Save
+
+Step 4 — Disable Block Public Access
+
+Permissions tab → Block Public Access
+Edit → Uncheck all → Save → type confirm
+
+what is server access login in s3?
+
+Server Access Logging means S3 records detailed logs of every request made to your bucket — who accessed it, what they did, when, and from where.
+
+Every time someone accesses your bucket, S3 records:
+
+Who made the request?      → IP address, requester identity
+What did they do?          → GET, PUT, DELETE etc.
+Which object?              → object name/key
+When?                      → date and time
+Was it successful?         → HTTP status code (200, 403, 404)
+How much data transferred? → bytes sent
+How long did it take?      → response time
+
+
+Two Buckets Needed
+
+Source Bucket          Log Bucket
+(your actual data)  →  (where logs are saved)
+
+mybucket            →  mybucket-logs
+
+How to Enable Server Access Logging
+
+Step 1 — Create a Log Bucket
+
+Create a separate S3 bucket to store logs
+e.g. my-bucket-access-logs
+Must be in the same region as source bucket
+
+Step 2 — Enable Logging on Source Bucket
+
+S3 Console → Your Source Bucket
+Click Properties tab
+Scroll to Server access logging
+Click Edit
+Select Enable
+Choose your log bucket
+Set a prefix (optional) e.g. logs/
+Click Save
+
+what is object lock in s3?
+
+S3 Object Lock means you can prevent objects from being deleted or overwritten for a fixed period or indefinitely — even by the root user or administrators.
+
+Without Object Lock:
+  Anyone with permissions can delete or overwrite your file ❌
+
+With Object Lock:
+  File is LOCKED — nobody can delete or modify it
+  until the lock expires ✅
+
+Important Requirements
+⚠️ Object Lock must be enabled at bucket creation time
+
+You cannot enable it on an existing bucket
+Once enabled, versioning is automatically enabled and cannot be disabled
+
+How to Enable Object Lock
+Step 1 — Enable at Bucket Creation
+
+S3 Console → Create Bucket
+Scroll to Object Lock
+Check Enable Object Lock
+Click Create Bucket
+
+How to secure your s3 bucket?
+
+2 ways 
+
+ACL
+Bucket policy
+
+What is ACL in s3?
+
+ACL is a legacy access control mechanism that defines who can access your S3 buckets and objects, and what actions they can perform.
+
+Think of ACL like a Guest List at a party:
+
+Without ACL:
+  Only you (owner) can enter ✅
+
+With ACL:
+  You add specific people/groups
+  and define what they can do
+  (read, write, full control) ✅
+
+Two Types of ACL
+
+ACL
+ ├── Bucket ACL   → controls access to the bucket itself
+ └── Object ACL   → controls access to individual objects
+
+| Permission       | Bucket Level           | Object Level     |
+| ---------------- | ---------------------- | ---------------- |
+| **READ**         | List objects in bucket | Read object data |
+| **WRITE**        | Add/delete objects     | Not applicable   |
+| **READ_ACP**     | Read bucket ACL        | Read object ACL  |
+| **WRITE_ACP**    | Write bucket ACL       | Write object ACL |
+| **FULL_CONTROL** | All permissions        | All permissions  |
+
+
+What is bucket policy?
+
+⚠️ ACL is disabled by default since April 2023 — must enable manually. AWS recommends Bucket Policy instead.
+
+Bucket Policy controls access at the entire bucket level using JSON rules. More powerful and flexible than ACL.
+
+
+
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "statement name",
+      "Effect": "Allow or Deny",
+      "Principal": "who",
+      "Action": "what action",
+      "Resource": "which bucket/object",
+      "Condition": "when (optional)"
+    }
+  ]
+}
+
+
+1 — Make Entire Bucket Public (Read Only)
+
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "PublicRead",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::YOUR-BUCKET-NAME/*"
+    }
+  ]
+}
+
+
+🔹 ACL vs Bucket Policy – Key Differences
+
+| Feature              | ACL                  | Bucket Policy           |
+| -------------------- | -------------------- | ----------------------- |
+| Recommended          | ❌ Legacy             | ✅ Yes                   |
+| Level                | Per object or bucket | Entire bucket or prefix |
+| Flexibility          | Limited              | Very flexible           |
+| Conditions           | ❌ No                 | ✅ Yes                   |
+| Cross-account access | ✅ Yes                | ✅ Yes                   |
+| Force HTTPS          | ❌ No                 | ✅ Yes                   |
+| Max size             | Small (20 KB)        | Larger / more powerful  |
+| Default state        | ❌ Disabled           | ✅ Available             |
+
+
+what is replication is s3?
+
+Replication means S3 automatically copies objects from one bucket to another — either in the same region or different region.
+
+
+Two Types of Replication
+
+S3 Replication
+    ├── CRR (Cross Region Replication)
+    └── SRR (Same Region Replication)
+
+
+How to Set Up Replication
+Step 1 — Enable Versioning on Both Buckets
+
+Source bucket → Properties → Bucket Versioning → Enable
+Destination bucket → Properties → Bucket Versioning → Enable
+
+Step 2 — Create Replication Rule
+
+Source bucket → Management tab
+Click Replication rules → Create replication rule
+
+Step 3 — Configure the Rule
+
+Rule name        → e.g. "replicate-to-india"
+Status           → Enabled
+Source scope     → Entire bucket OR specific prefix/tag
+Destination      → Choose destination bucket
+IAM Role         → Create new or use existing
