@@ -77,6 +77,53 @@ What is versioning in S3?
 
 Versioning means S3 keeps multiple versions of the same object every time you upload, overwrite, or delete it.
 
+Versioning is enabled at Bucket Level only!
+
+Bucket Level — Not Object Level
+
+Versioning setting:
+──────────────────
+✅ Bucket level    → you enable on entire bucket
+❌ Object level    → cannot enable per object
+
+When you enable versioning on bucket:
+  ALL objects in that bucket
+  get versioning automatically
+  you cannot pick specific objects ❌
+
+3 Bucket Versioning States
+
+1. Unversioned (default)
+   ──────────────────────
+   new bucket
+   no versioning
+   overwrite = old file gone forever ❌
+
+2. Versioning Enabled
+   ───────────────────
+   all objects versioned ✅
+   every upload = new version
+   delete = delete marker added
+   can restore anytime ✅
+
+3. Versioning Suspended
+   ─────────────────────
+   was enabled before
+   now suspended
+   old versions still exist ✅
+   new uploads = no new versions ❌
+   cannot go back to unversioned ⚠️
+
+How to Enable in Console
+
+S3 Console
+→ Your Bucket
+→ Properties tab
+→ Bucket Versioning section
+→ Edit
+→ Enable ✅
+→ Save changes
+
 Storage Cost with Versioning
 ⚠️ Every version is stored separately and you pay for all versions.
 file.txt v1 = 10 MB  → you pay for 10 MB
