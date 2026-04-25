@@ -331,6 +331,10 @@ Day 365  → Object automatically deleted ❌
 
 what is static website hosting in s3?
 
+Bucket name = anything   → S3 URL only ✅
+Bucket name = domain     → Route 53 direct ✅
+Bucket name = anything   → CloudFront + Route 53 ✅
+
 Static Website                    Dynamic Website
       │                                 │
 HTML, CSS, JavaScript            Needs a server
@@ -353,7 +357,7 @@ Step by Step — How to Host a Static Website
 
 Step 1 — Create an S3 Bucket
 
-Bucket name must match your domain name (if using custom domain)
+Bucket name must match your domain name (if using custom domain) or route 53
 e.g. www.mywebsite.com
 Choose your region
 
