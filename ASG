@@ -1,3 +1,5 @@
+ASG (Auto Scaling Group) automatically increases EC2 instances when traffic is high and decreases when traffic is low, based on rules you define like CPU usage or request count.
+
 Pre-request
 
 Launch Template
