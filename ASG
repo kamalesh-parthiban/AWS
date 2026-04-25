@@ -1,0 +1,73 @@
+Pre-request
+
+Launch Template
+Load balancer
+
+Health Check
+
+ASG uses ELB Health Checks to determine if an instance is healthy or not.
+
+It uses CPU > 70% → add 2 instances Scaling Policies in ASG
+
+When we create only we get option add SNS and watchcloud
+
+Once ASG is created the desired no. of ex2 will start create
+
+We can create different zones in VPC in ASG while creating
+
+Automatically manages EC2 instances by launching or terminating them based on demand, while maintaining availability.
+
+Adds instances when load increases 📈
+Removes instances when load decreases 📉
+Replaces unhealthy instances automatically 🔄
+
+Here’s a step-by-step way to set up an Auto Scaling Group (ASG) in AWS, in a simple, interview-friendly way?
+
+1. Create a Launch Template or Launch Configuration
+A Launch Template defines how your EC2 instances should launch:
+AMI (Amazon Machine Image)
+Instance type (t2.micro, t3.large, etc.)
+Key pair for SSH
+Security group
+User data (optional startup scripts)
+EBS volume
+Packages
+
+Tip: Launch Templates are preferred over Launch Configurations—they’re more flexible.
+
+2. Create the Auto Scaling Group
+Go to EC2 → Auto Scaling → Auto Scaling Groups → Create ASG
+Choose the Launch Template
+Set minimum, maximum, and desired capacity:
+Min → minimum instances to always run
+Max → maximum allowed
+Desired → initially running instances
+Select VPC and Subnets
+Choose multiple Availability Zones for high availability
+
+3. Attach Load Balancer (Optional but Recommended)
+Integrate with Elastic Load Balancer (ELB) so traffic distributes evenly across instances
+Health checks:
+EC2 health check
+ELB health check
+
+ASG automatically replaces unhealthy instances.
+
+4. Set Scaling Policies in ASG
+Dynamic scaling: add/remove instances based on CloudWatch metrics
+Example: CPU > 70% → add 2 instances
+CPU < 30% → remove 1 instance
+Scheduled scaling: scale at fixed times
+Example: Black Friday traffic spike
+Target tracking scaling: maintain a target metric (like CPU 50%)
+
+Enable Notifications (Optional)
+Use SNS to get notifications when scaling happens
+Helps monitor and audit scaling events
+------------------------------------------------------
+What happens to the data when we change the instance type of an EC2 instance? Are there any scenarios where data loss can occur?
+
+Changing from t2.micro → t2.large does NOT cause data loss as long as:
+
+You didn’t terminate the instance
+You’re using EBS (default)
