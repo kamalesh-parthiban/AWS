@@ -233,8 +233,10 @@ file.txt v2 = 10 MB  → you pay for 20 MB
 file.txt v3 = 10 MB  → you pay for 30 MB
 To manage costs, use Lifecycle Policies to auto-delete old versions:
 
+https://www.youtube.com/watch?v=c5PKWc_n2Kc
+
 S3 Console → Your Bucket → Management tab
-Add Lifecycle Rule → expire old versions after X days
+Add Lifecycle Rule → expire cirrect versions of objects (after X days) or Move current version of objects between storage classes
 
 How to Restore a Deleted Object
 
