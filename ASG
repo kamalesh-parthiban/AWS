@@ -4,9 +4,43 @@ Launch Template
 Load balancer
 
 Health Check
-
+---------------------------
 ASG uses ELB Health Checks to determine if an instance is healthy or not.
 
+ELB 
+
+ELB continuously checks
+if your targets are healthy
+        ↓
+healthy   → sends traffic ✅
+unhealthy → stops traffic ❌
+
+Health Check per LB Type
+
+ALB (Application LB):
+─────────────────────
+Protocol: HTTP / HTTPS
+Path    : /health
+Checks  : HTTP response code
+          200 = healthy ✅
+          anything else = unhealthy ❌
+Layer   : Layer 7 (reads HTTP)
+
+NLB (Network LB):
+──────────────────
+Protocol: TCP / HTTP / HTTPS
+TCP check: just checks port open
+           no HTTP reading
+           connection success = healthy ✅
+           connection failed  = unhealthy ❌
+Layer   : Layer 4 (TCP only)
+
+CLB (Classic LB):
+──────────────────
+Protocol: HTTP / HTTPS / TCP
+older type
+not recommended for new setup
+--------------------------------------
 It uses CPU > 70% → add 2 instances Scaling Policies in ASG
 
 When we create only we get option add SNS and watchcloud
