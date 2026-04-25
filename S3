@@ -238,6 +238,10 @@ https://www.youtube.com/watch?v=c5PKWc_n2Kc
 S3 Console → Your Bucket → Management tab
 Add Lifecycle Rule → expire cirrect versions of objects (after X days) or Move current version of objects between storage classes
 
+and move noncurrent version of object between storage classes -- if you enable version the old version move to another storage classes
+
+and permanently delete non-current versions
+
 How to Restore a Deleted Object
 
 Go to your bucket
