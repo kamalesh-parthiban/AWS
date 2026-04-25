@@ -97,6 +97,34 @@ Scheduled scaling: scale at fixed times
 Example: Black Friday traffic spike
 Target tracking scaling: maintain a target metric (like CPU 50%)
 
+During creation:
+  ✅ Target Tracking → available
+  ❌ Step Scaling    → not available
+  ❌ Scheduled       → not available
+
+After creation:
+  ✅ Target Tracking → available
+  ✅ Step Scaling    → available
+  ✅ Scheduled       → available
+
+Types of scaling policy
+
+Target Tracking Scaling
+→ automatically scales to maintain a target metric value
+  example: keep CPU at 70% always ✅
+
+Step Scaling
+→ scales by different amounts based on how high the metric goes
+  example: CPU 70% add 1, CPU 90% add 5 ✅
+
+Scheduled Scaling
+→ scales at a specific time you define
+  example: every Monday 9am add 10 instances ✅
+
+Simple Scaling
+→ old way — waits for cooldown period before scaling again
+  example: CPU high → add 1 → wait 300 seconds → check again ❌ not recommended
+
 Enable Notifications (Optional)
 Use SNS to get notifications when scaling happens
 Helps monitor and audit scaling events
